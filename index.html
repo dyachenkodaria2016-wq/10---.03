@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 клас • Цифрова репутація, цифровий «слід» та принципи цифрового громадянства</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-alt: #eef3fa;
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --primary-soft: #dbeafe;
+      --accent: #0d9488;
+      --accent-soft: #ccfbf1;
+      --warning: #d97706;
+      --warning-soft: #fef3c7;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --success: #15803d;
+      --success-soft: #dcfce7;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --sidebar-w: 315px;
+      --radius: 16px;
+      --shadow: 0 6px 24px rgba(15, 23, 42, 0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 19px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.68;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Ліве навігаційне меню */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #0f172a;
+      color: #f8fafc;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 100;
+      border-right: 1px solid #1e293b;
+    }
+    .brand {
+      background: linear-gradient(135deg, #1d4ed8, #0d9488);
+      padding: 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .brand span {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .student-badge {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.85rem;
+    }
+    .student-badge .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      color: #cbd5e1;
+    }
+    .timer-pill {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 3px 9px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .progress-wrap { margin-top: 10px; }
+    .progress-bar-bg {
+      height: 8px;
+      background: #334155;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #34d399);
+      transition: width 0.35s ease;
+    }
+
+    .nav-group-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      padding: 0 10px;
+      margin-top: 4px;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: #1e293b;
+      color: #38bdf8;
+      transform: translateX(3px);
+    }
+    .nav-links a .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      flex-shrink: 0;
+    }
+    .nav-links a.done .dot { background: #22c55e; }
+    .nav-links a.active .dot { background: #38bdf8; }
+
+    .btn-sidebar-pdf {
+      margin-top: auto;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-sidebar-pdf:hover { background: #1d4ed8; }
+
+    /* Основний контент */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 32px 44px 70px;
+      max-width: 1280px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid #e2e8f0;
+    }
+
+    h1 {
+      font-size: 2rem;
+      line-height: 1.25;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: 1.55rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 2px solid var(--primary-soft);
+      padding-bottom: 10px;
+    }
+    h3 {
+      font-size: 1.22rem;
+      color: #1e293b;
+      margin: 22px 0 10px;
+    }
+    p { margin-bottom: 14px; }
+    ul, ol { margin: 10px 0 16px 26px; }
+    li { margin-bottom: 8px; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+      margin: 18px 0;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .info-box {
+      background: var(--surface-alt);
+      border-left: 5px solid var(--primary-light);
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+    .info-box.teal { border-left-color: var(--accent); background: #f0fdfa; }
+    .info-box.amber { border-left-color: var(--warning); background: #fffbeb; }
+    .info-box.red { border-left-color: var(--danger); background: #fef2f2; }
+
+    /* Реєстрація учня */
+    .reg-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+      background: var(--primary-soft);
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #1e3a8a;
+    }
+    .field input, .field select {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      border: 2px solid #93c5fd;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+    }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.2s;
+    }
+    .btn:hover { background: #1e3a8a; transform: translateY(-1px); }
+    .btn.secondary { background: #475569; }
+    .btn.secondary:hover { background: #334155; }
+    .btn.teal { background: var(--accent); }
+    .btn.teal:hover { background: #0f766e; }
+
+    /* SVG ілюстрації та діаграми */
+    .diagram-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 20px;
+      margin: 22px 0;
+      text-align: center;
+    }
+    .diagram-caption {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      font-style: italic;
+    }
+    svg.infographic {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Таблиця */
+    table.styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 0.92rem;
+    }
+    table.styled-table th, table.styled-table td {
+      border: 1px solid #cbd5e1;
+      padding: 12px 15px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.styled-table th {
+      background: #1e3a8a;
+      color: #fff;
+    }
+    table.styled-table tr:nth-child(even) { background: #f8fafc; }
+
+    /* Картки 9 елементів */
+    .elem-card {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-top: 4px solid var(--primary-light);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .elem-card h4 {
+      font-size: 1rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .elem-card p { font-size: 0.88rem; margin: 0; color: #334155; }
+
+    /* Drag and Drop */
+    .dnd-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 76px;
+      padding: 14px;
+      background: #f1f5f9;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .dnd-item {
+      background: #fff;
+      border: 2px solid #3b82f6;
+      color: #1e3a8a;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      transition: transform 0.15s, border-color 0.2s;
+    }
+    .dnd-item:hover { transform: scale(1.02); }
+    .dnd-item.selected { outline: 3px solid #f59e0b; background: #fef3c7; }
+    .dnd-item.correct { border-color: #16a34a; background: #dcfce7; color: #14532d; }
+    .dnd-item.wrong { border-color: #dc2626; background: #fee2e2; color: #7f1d1d; }
+
+    .dnd-zones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .dnd-zone {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dnd-zone.over { border-color: var(--accent); background: #f0fdfa; }
+    .dnd-zone h4 {
+      font-size: 1rem;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 8px;
+    }
+
+    /* Симулятор приватності */
+    .sim-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .sim-row:last-child { border-bottom: none; }
+    .sim-row select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #94a3b8;
+      font-size: 0.88rem;
+      max-width: 360px;
+    }
+    .sim-meter-wrap {
+      background: #e2e8f0;
+      height: 18px;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 14px 0;
+    }
+    .sim-meter-fill {
+      height: 100%;
+      width: 20%;
+      background: #dc2626;
+      transition: width 0.35s, background 0.35s;
+    }
+
+    /* Кейс-тренажер, Ситуаційні задачі та Тест */
+    .quiz-q {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .quiz-q-title {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #0f172a;
+    }
+    .option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #fff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .option-label:hover { border-color: #3b82f6; background: #eff6ff; }
+    .option-label.correct-opt { border-color: #16a34a; background: #dcfce7; }
+    .option-label.wrong-opt { border-color: #dc2626; background: #fee2e2; }
+    .feedback-note {
+      margin-top: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .stat-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 16px;
+      align-items: center;
+    }
+    .stat-chip {
+      background: #eef2ff;
+      color: #1e3a8a;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    /* Контейнер рендерингу PDF (поза екраном, щоб html2canvas завжди захоплював ширину) */
+    #pdf-render-host {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 760px;
+      background: #ffffff;
+      color: #000000;
+      padding: 28px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      z-index: -1;
+    }
+
+    @media (max-width: 980px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+      }
+      body { flex-direction: column; }
+      .main { margin-left: 0; padding: 20px; }
+      .reg-form, .dnd-zones { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ЛІВЕ НАВІГАЦІЙНЕ МЕНЮ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span>Інформатика • 10 клас</span>
+      Цифрова репутація, «слід» та цифрове громадянство
+    </div>
+
+    <div class="student-badge">
+      <div id="sidebar-student-name"><strong>Учень:</strong> Не зареєстровано</div>
+      <div class="row">
+        <span>Час на уроці:</span>
+        <span class="timer-pill" id="live-timer">00:00</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="row" style="margin-top:0;">
+          <span>Прогрес модулів:</span>
+          <span id="progress-text">0 / 5</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-group-title">Теоретичний блок</div>
+    <ul class="nav-links">
+      <li><a href="#sec-reg" id="nav-reg"><span class="dot"></span>0. Реєстрація учня</a></li>
+      <li><a href="#sec-footprint" id="nav-footprint"><span class="dot"></span>1. Цифровий «слід» і типи</a></li>
+      <li><a href="#sec-reputation" id="nav-reputation"><span class="dot"></span>2. Цифрова репутація</a></li>
+      <li><a href="#sec-citizenship" id="nav-citizenship"><span class="dot"></span>3. Цифрове громадянство</a></li>
+      <li><a href="#sec-hygiene" id="nav-hygiene"><span class="dot"></span>4. Алгоритм кібергігієни</a></li>
+    </ul>
+
+    <div class="nav-group-title">Практикум та контроль</div>
+    <ul class="nav-links">
+      <li><a href="#sec-dnd" id="nav-dnd"><span class="dot"></span>5. Вправа Drag &amp; Drop</a></li>
+      <li><a href="#sec-sim" id="nav-sim"><span class="dot"></span>6. Симулятор приватності</a></li>
+      <li><a href="#sec-cases" id="nav-cases"><span class="dot"></span>7. Кейс-тренажер (4 кейси)</a></li>
+      <li><a href="#sec-situations" id="nav-situations"><span class="dot"></span>8. Ситуаційні задачі (6 задач)</a></li>
+      <li><a href="#sec-test" id="nav-test"><span class="dot"></span>9. Підсумковий тест</a></li>
+      <li><a href="#sec-report" id="nav-report"><span class="dot"></span>10. Звіт успішності (PDF)</a></li>
+    </ul>
+
+    <button class="btn-sidebar-pdf" onclick="generatePDFReport()">
+      📄 Завантажити PDF-звіт
+    </button>
+  </aside>
+
+  <!-- ОСНОВНИЙ КОНТЕНТ -->
+  <main class="main">
+
+    <!-- 0. РЕЄСТРАЦІЯ -->
+    <section class="card" id="sec-reg">
+      <span class="badge">Модуль 10 класу • Інтерактивний конспект</span>
+      <h1>Цифрова репутація, цифровий «слід» та принципи цифрового громадянства</h1>
+      <p>
+        Кожен ваш клік, пошуковий запит, коментар чи геотег формує унікальний інформаційний портрет у мережі.
+        У цьому модулі ви опануєте теорію управління цифровим слідом, пройдете інтерактивні тренажери, розв'яжете ситуаційні задачі та сформуєте персональний PDF-звіт про результати навчання.
+      </p>
+
+      <div class="reg-form">
+        <div class="field">
+          <label for="studentName">Прізвище та ім'я учня / учениці</label>
+          <input type="text" id="studentName" placeholder="Наприклад: Коваленко Олександр" />
+        </div>
+        <div class="field">
+          <label for="studentClass">Клас</label>
+          <select id="studentClass">
+            <option value="10-А">10-А</option>
+            <option value="10-Б">10-Б</option>
+            <option value="10-В">10-В</option>
+            <option value="10-Г">10-Г</option>
+          </select>
+        </div>
+        <button class="btn" onclick="registerStudent()">Почати роботу</button>
+      </div>
+      <p id="reg-status" style="margin-top:12px; font-weight:600; color:var(--accent);"></p>
+    </section>
+
+    <!-- 1. ЦИФРОВИЙ СЛІД -->
+    <section class="card" id="sec-footprint">
+      <h2>1. Поняття та структура цифрового «сліду»</h2>
+      <p>
+        <strong>Цифровий слід (Digital Footprint)</strong> — це сукупність усіх даних про дії, вподобання, переміщення та комунікацію особи в цифровому середовищі, які зберігаються на серверах провайдерів, соціальних мереж, пошукових систем та державних або комерційних платформ.
+      </p>
+
+      <div class="grid-2">
+        <div class="info-box">
+          <h3>🟢 Активний цифровий слід</h3>
+          <p>Дані, які користувач створює та публікує <strong>свідомо й цілеспрямовано</strong>:</p>
+          <ul>
+            <li>пости, фотографії, відео та сторіз у соцмережах;</li>
+            <li>коментарі на форумах, відгуки на товари та оцінки;</li>
+            <li>заповнені онлайн-анкети, реєстрації на сайтах;</li>
+            <li>електронні листи та повідомлення в месенджерах.</li>
+          </ul>
+        </div>
+        <div class="info-box teal">
+          <h3>🔵 Пасивний цифровий слід</h3>
+          <p>Дані, які збираються автоматично <strong>без прямого відома користувача</strong>:</p>
+          <ul>
+            <li>IP-адреса, тип пристрою, роздільна здатність екрана (Browser Fingerprinting);</li>
+            <li>файли <code>cookies</code> та рекламні ідентифікатори;</li>
+            <li>історія пошукових запитів та час перегляду сторінок;</li>
+            <li>GPS-координати, підключення до Wi-Fi та метадані EXIF у фото.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SVG ІНФОГРАФІКА 1: Екосистема цифрового сліду -->
+      <div class="diagram-card">
+        <svg class="infographic" viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gradCenter" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1e40af"/>
+              <stop offset="100%" stop-color="#0d9488"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="880" height="330" rx="16" fill="#f8fafc"/>
+          <line x1="250" y1="80" x2="365" y2="145" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6,4"/>
+          <line x1="250" y1="250" x2="365" y2="185" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6,4"/>
+          <line x1="630" y1="80" x2="515" y2="145" stroke="#0d9488" stroke-width="3" stroke-dasharray="6,4"/>
+          <line x1="630" y1="250" x2="515" y2="185" stroke="#0d9488" stroke-width="3" stroke-dasharray="6,4"/>
+
+          <rect x="345" y="115" width="190" height="100" rx="18" fill="url(#gradCenter)"/>
+          <text x="440" y="158" fill="#ffffff" font-size="18" font-weight="bold" text-anchor="middle">ЦИФРОВИЙ</text>
+          <text x="440" y="182" fill="#ffffff" font-size="18" font-weight="bold" text-anchor="middle">СЛІД ОСОБИ</text>
+
+          <rect x="25" y="30" width="235" height="95" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+          <text x="142" y="60" fill="#1e3a8a" font-size="15" font-weight="bold" text-anchor="middle">1. Соціальні мережі</text>
+          <text x="142" y="84" fill="#1e293b" font-size="13" text-anchor="middle">Пости, вподобання, підписки,</text>
+          <text x="142" y="103" fill="#1e293b" font-size="13" text-anchor="middle">позначки друзів на фото</text>
+
+          <rect x="25" y="205" width="235" height="95" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+          <text x="142" y="235" fill="#1e3a8a" font-size="15" font-weight="bold" text-anchor="middle">2. Вебнавігація</text>
+          <text x="142" y="259" fill="#1e293b" font-size="13" text-anchor="middle">Cookies, історія браузера,</text>
+          <text x="142" y="278" fill="#1e293b" font-size="13" text-anchor="middle">кліки, час на сторінці</text>
+
+          <rect x="620" y="30" width="235" height="95" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+          <text x="737" y="60" fill="#115e59" font-size="15" font-weight="bold" text-anchor="middle">3. Технічні метадані</text>
+          <text x="737" y="84" fill="#1e293b" font-size="13" text-anchor="middle">IP-адреса, модель смартфона,</text>
+          <text x="737" y="103" fill="#1e293b" font-size="13" text-anchor="middle">EXIF-дані зображень</text>
+
+          <rect x="620" y="205" width="235" height="95" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+          <text x="737" y="235" fill="#115e59" font-size="15" font-weight="bold" text-anchor="middle">4. Фінанси та сервіси</text>
+          <text x="737" y="259" fill="#1e293b" font-size="13" text-anchor="middle">Онлайн-покупки, геолокація,</text>
+          <text x="737" y="278" fill="#1e293b" font-size="13" text-anchor="middle">державні та освітні портали</text>
+        </svg>
+        <div class="diagram-caption">Схема 1. Чотири основні джерела формування цифрового сліду сучасного користувача.</div>
+      </div>
+
+      <h3>Що таке метадані EXIF та «відбиток браузера» (Browser Fingerprinting)?</h3>
+      <p>
+        Навіть якщо ви вимкнули збереження <code>cookies</code>, сайти можуть ідентифікувати ваш пристрій за комбінацією параметрів: версія ОС, встановлені шрифти, часовий пояс, мова системи та параметри відеокарти. У поєднанні ці дані створюють унікальний <strong>цифровий відбиток браузера</strong> з точністю понад 90%. А кожна фотографія зі смартфона за замовчуванням містить приховані <strong>EXIF-метадані</strong>: точні координати GPS, дату, час і модель камери.
+      </p>
+    </section>
+
+    <!-- 2. ЦИФРОВА РЕПУТАЦІЯ -->
+    <section class="card" id="sec-reputation">
+      <h2>2. Цифрова репутація та закони поширення інформації</h2>
+      <p>
+        <strong>Цифрова репутація (Online Reputation)</strong> — це стійке уявлення про особистість, її компетентність, цінності та надійність, яке формується в інших людей на основі доступної в інтернеті інформації.
+      </p>
+
+      <div class="grid-3">
+        <div class="info-box">
+          <h4>♾️ Ефект «цифрової вічності»</h4>
+          <p>Видалення посту зі своєї сторінки не гарантує його зникнення: інформація залишається у кеші пошуковиків, веб-архівах (Wayback Machine) або на скриншотах інших користувачів.</p>
+        </div>
+        <div class="info-box amber">
+          <h4>📢 Ефект Стрейзанд</h4>
+          <p>Соціальний феномен, коли спроба приховати, видалити або цензурувати певну інформацію призводить лише до її миттєвого вірусного поширення серед мільйонів людей.</p>
+        </div>
+        <div class="info-box red">
+          <h4>🤖 Алгоритмічне профілювання</h4>
+          <p>Системи штучного інтелекту аналізують публічну активність для розрахунку кредитного рейтингу, страхових тарифів та персоналізації новинної стрічки («інформаційна бульбашка»).</p>
+        </div>
+      </div>
+
+      <!-- ДІАГРАМА 2: Вплив цифрової репутації -->
+      <div class="diagram-card">
+        <svg class="infographic" viewBox="0 0 880 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="880" height="310" rx="16" fill="#f8fafc"/>
+          <text x="440" y="34" fill="#0f172a" font-size="17" font-weight="bold" text-anchor="middle">
+            Як цифрова репутація впливає на кар'єру та навчання (дані досліджень HR та приймальних комісій)
+          </text>
+
+          <text x="30" y="85" fill="#1e293b" font-size="14" font-weight="bold">Перевіряють соцмережі кандидатів перед співбесідою</text>
+          <rect x="440" y="67" width="320" height="26" rx="6" fill="#2563eb"/>
+          <text x="772" y="85" fill="#1e3a8a" font-size="15" font-weight="bold">79%</text>
+
+          <text x="30" y="135" fill="#1e293b" font-size="14" font-weight="bold">Відмовляли кандидату через токсичні пости або булінг</text>
+          <rect x="440" y="117" width="220" height="26" rx="6" fill="#dc2626"/>
+          <text x="672" y="135" fill="#991b1b" font-size="15" font-weight="bold">54%</text>
+
+          <text x="30" y="185" fill="#1e293b" font-size="14" font-weight="bold">Надали перевагу кандидату завдяки фаховому блогу / проєктам</text>
+          <rect x="440" y="167" width="265" height="26" rx="6" fill="#0d9488"/>
+          <text x="717" y="185" fill="#115e59" font-size="15" font-weight="bold">65%</text>
+
+          <text x="30" y="235" fill="#1e293b" font-size="14" font-weight="bold">Перевіряють цифрову активність абітурієнтів на гранти</text>
+          <rect x="440" y="217" width="165" height="26" rx="6" fill="#d97706"/>
+          <text x="617" y="235" fill="#92400e" font-size="15" font-weight="bold">40%</text>
+
+          <line x1="440" y1="55" x2="440" y2="265" stroke="#64748b" stroke-width="2"/>
+          <text x="440" y="290" fill="#475569" font-size="13" text-anchor="middle">
+            Висновок: позитивний цифровий портфель (портфоліо, GitHub, волонтерство) є конкурентною перевагою.
+          </text>
+        </svg>
+        <div class="diagram-caption">Діаграма 2. Вплив відкритого цифрового профілю на рішення роботодавців та освітніх інституцій.</div>
+      </div>
+
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>Негативна цифрова репутація</th>
+            <th>Позитивна цифрова репутація</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Контент</strong></td>
+            <td>Мова ворожнечі, агресивні коментарі, поширення фейків, порушення авторського права.</td>
+            <td>Власні навчальні або творчі проєкти, конструктивні дискусії, перевірені джерела.</td>
+          </tr>
+          <tr>
+            <td><strong>Приватність</strong></td>
+            <td>Відкриті особисті дані, геолокація в реальному часі, публікація фото інших без згоди.</td>
+            <td>Чітке розмежування публічного та приватного простору, двофакторна автентифікація.</td>
+          </tr>
+          <tr>
+            <td><strong>Наслідки</strong></td>
+            <td>Блокування акаунтів, репутаційні втрати, ризик шахрайства (доксинг, фішинг).</td>
+            <td>Довіра спільноти, академічні та кар'єрні можливості, безпечна взаємодія.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3. ЦИФРОВЕ ГРОМАДЯНСТВО -->
+    <section class="card" id="sec-citizenship">
+      <h2>3. Принципи цифрового громадянства (Модель Майка Ріббла)</h2>
+      <p>
+        <strong>Цифрове громадянство (Digital Citizenship)</strong> — це система норм безпечної, етичної, відповідальної та правомірної поведінки людини у цифровому суспільстві. За класичною концепцією дослідника <strong>Майка Ріббла (Mike Ribble)</strong>, цифрове громадянство базується на трьох фундаментальних принципах (<em>REP: Respect, Educate, Protect — Поважай, Навчайся, Захищай</em>) та розкривається через <strong>9 ключових елементів</strong>:
+      </p>
+
+      <div class="grid-3">
+        <div class="elem-card">
+          <h4>1. Цифровий доступ (Digital Access)</h4>
+          <p>Рівноправна участь усіх громадян у цифровому суспільстві та подолання цифрової нерівності.</p>
+        </div>
+        <div class="elem-card">
+          <h4>2. Цифрова комерція (Digital Commerce)</h4>
+          <p>Усвідомлена та безпечна купівля-продаж товарів і послуг онлайн, захист платіжних даних.</p>
+        </div>
+        <div class="elem-card">
+          <h4>3. Цифрова комунікація (Digital Communication)</h4>
+          <p>Вибір доречних каналів зв'язку, дотримання нетикету та культури онлайн-спілкування.</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#0d9488;">
+          <h4>4. Цифрова грамотність (Digital Literacy)</h4>
+          <p>Вміння критично оцінювати достовірність інформації, розпізнавати фейки, дипфейки та маніпуляції.</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#0d9488;">
+          <h4>5. Цифровий етикет (Digital Etiquette)</h4>
+          <p>Повага до гідності інших користувачів, протидія кібербулінгу, тролінгу та токсичності.</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#0d9488;">
+          <h4>6. Цифрове право (Digital Law)</h4>
+          <p>Дотримання законодавства щодо авторського права (ліцензії Creative Commons), захисту персональних даних (GDPR).</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#d97706;">
+          <h4>7. Цифрові права та обов'язки</h4>
+          <p>Баланс між свободою слова та відповідальністю за поширений контент, «право на забуття».</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#d97706;">
+          <h4>8. Цифрове здоров'я та добробут</h4>
+          <p>Контроль екранного часу, профілактика цифрової втоми, захист фізичного та ментального здоров'я.</p>
+        </div>
+        <div class="elem-card" style="border-top-color:#d97706;">
+          <h4>9. Цифрова безпека (Digital Security)</h4>
+          <p>Самозахист даних: складні паролі, 2FA, резервне копіювання, розпізнавання фішингу.</p>
+        </div>
+      </div>
+
+      <!-- СХЕМА 3: Три кити REP -->
+      <div class="diagram-card">
+        <svg class="infographic" viewBox="0 0 880 230" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="880" height="230" rx="16" fill="#f8fafc"/>
+          <text x="440" y="34" fill="#0f172a" font-size="17" font-weight="bold" text-anchor="middle">
+            Три принципи цифрового громадянства (Модель REP)
+          </text>
+
+          <rect x="35" y="60" width="250" height="140" rx="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="160" y="95" fill="#1e3a8a" font-size="17" font-weight="bold" text-anchor="middle">RESPECT (Поважай)</text>
+          <text x="160" y="125" fill="#1e293b" font-size="13.5" text-anchor="middle">• Цифровий етикет</text>
+          <text x="160" y="148" fill="#1e293b" font-size="13.5" text-anchor="middle">• Рівний цифровий доступ</text>
+          <text x="160" y="171" fill="#1e293b" font-size="13.5" text-anchor="middle">• Дотримання закону</text>
+
+          <rect x="315" y="60" width="250" height="140" rx="14" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+          <text x="440" y="95" fill="#115e59" font-size="17" font-weight="bold" text-anchor="middle">EDUCATE (Навчайся)</text>
+          <text x="440" y="125" fill="#1e293b" font-size="13.5" text-anchor="middle">• Медіаграмотність</text>
+          <text x="440" y="148" fill="#1e293b" font-size="13.5" text-anchor="middle">• Культура комунікації</text>
+          <text x="440" y="171" fill="#1e293b" font-size="13.5" text-anchor="middle">• Безпечна е-комерція</text>
+
+          <rect x="595" y="60" width="250" height="140" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+          <text x="720" y="95" fill="#92400e" font-size="17" font-weight="bold" text-anchor="middle">PROTECT (Захищай)</text>
+          <text x="720" y="125" fill="#1e293b" font-size="13.5" text-anchor="middle">• Кібербезпека акаунтів</text>
+          <text x="720" y="148" fill="#1e293b" font-size="13.5" text-anchor="middle">• Права та обов'язки</text>
+          <text x="720" y="171" fill="#1e293b" font-size="13.5" text-anchor="middle">• Цифрове здоров'я</text>
+        </svg>
+        <div class="diagram-caption">Схема 3. Групування 9 елементів цифрового громадянства за трьома базовими принципами.</div>
+      </div>
+    </section>
+
+    <!-- 4. АЛГОРИТМ КІБЕРГІГІЄНИ -->
+    <section class="card" id="sec-hygiene">
+      <h2>4. Практичний алгоритм управління цифровою репутацією</h2>
+      <ol>
+        <li><strong>Регулярний самоаудит («Его-серфінг»):</strong> раз на 3 місяці шукайте своє ім'я, нікнейми та номер телефону в пошукових системах у режимі інкогніто, щоб бачити, що про вас знаходять сторонні.</li>
+        <li><strong>Аудит дозволів та приватності:</strong> перевіряйте, які сторонні додатки мають доступ до вашого Google / Apple / соцмережевого акаунту, та відкликайте зайві токени доступу.</li>
+        <li><strong>Правило «Золотої паузи» (THINK):</strong> перед публікацією перевіряйте контент за 5 критеріями: <em>T (True — чи це правда?), H (Helpful — чи це корисно?), I (Inspiring — чи не принижує це інших?), N (Necessary — чи варто це публікувати?), K (Kind — чи це доброзичливо?)</em>.</li>
+        <li><strong>Формування позитивного портфоліо:</strong> створюйте професійні або освітні профілі (наприклад, GitHub для коду, Behance для дизайну, участь в олімпіадах і волонтерстві).</li>
+        <li><strong>Реалізація «Права на забуття»:</strong> відповідно до європейського регламенту GDPR та Закону України «Про захист персональних даних», ви маєте право вимагати видалення застарілих або недостовірних даних про себе.</li>
+      </ol>
+    </section>
+
+    <!-- 5. ВПРАВА DRAG AND DROP -->
+    <section class="card" id="sec-dnd">
+      <h2>5. Інтерактивна вправа Drag &amp; Drop: Класифікатор цифрового сліду</h2>
+      <p>
+        Розподіліть наведені приклади між категоріями <strong>«Активний цифровий слід»</strong> та <strong>«Пасивний цифровий слід»</strong>.
+        <em>Підказка: перетягніть картку мишею або клікніть по картці, а потім клікніть по потрібній колонці.</em>
+      </p>
+
+      <div class="dnd-pool" id="dnd-pool" ondragover="allowDrop(event)" ondrop="dropItem(event, 'pool')"></div>
+
+      <div class="dnd-zones">
+        <div class="dnd-zone" id="zone-active" ondragover="allowDrop(event)" ondrop="dropItem(event, 'active')" onclick="zoneClick('active')">
+          <h4>🟢 Активний цифровий слід (свідомі дії)</h4>
+        </div>
+        <div class="dnd-zone" id="zone-passive" ondragover="allowDrop(event)" ondrop="dropItem(event, 'passive')" onclick="zoneClick('passive')">
+          <h4>🔵 Пасивний цифровий слід (автоматичний збір)</h4>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <button class="btn" onclick="checkDnD()">Перевірити розподіл</button>
+        <button class="btn secondary" onclick="resetDnD()">Скинути картки</button>
+        <span class="stat-chip" id="dnd-stats">Спроб: 0 | Результат: не перевірено</span>
+      </div>
+    </section>
+
+    <!-- 6. СИМУЛЯТОР ПРИВАТНОСТІ -->
+    <section class="card" id="sec-sim">
+      <h2>6. Інтерактивний симулятор: Аудит приватності профілю</h2>
+      <p>
+        Уявіть, що ви налаштовуєте новий профіль підлітка в популярній соціальній мережі. Оберіть оптимальні параметри безпеки, щоб знизити рівень ризику витоку даних нижче <strong>20%</strong>.
+      </p>
+
+      <div style="border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; background:#fff;">
+        <div class="sim-row">
+          <div><strong>1. Видимість профілю та списку друзів:</strong></div>
+          <select id="sim-1" onchange="updateSimulator()">
+            <option value="20">Відкритий для всіх в інтернеті</option>
+            <option value="8">Тільки для друзів друзів</option>
+            <option value="0">Тільки для підтверджених друзів</option>
+          </select>
+        </div>
+        <div class="sim-row">
+          <div><strong>2. Геолокація у публікаціях та сторіз:</strong></div>
+          <select id="sim-2" onchange="updateSimulator()">
+            <option value="20">Автоматично додавати точну адресу</option>
+            <option value="10">Додавати лише місто після виходу з локації</option>
+            <option value="0">Вимкнено за замовчуванням</option>
+          </select>
+        </div>
+        <div class="sim-row">
+          <div><strong>3. Пошук акаунту за номером телефону та e-mail:</strong></div>
+          <select id="sim-3" onchange="updateSimulator()">
+            <option value="15">Дозволено всім користувачам</option>
+            <option value="0">Заборонено (тільки за унікальним нікнеймом)</option>
+          </select>
+        </div>
+        <div class="sim-row">
+          <div><strong>4. Двофакторна автентифікація (2FA):</strong></div>
+          <select id="sim-4" onchange="updateSimulator()">
+            <option value="20">Вимкнено (лише пароль)</option>
+            <option value="8">SMS-код на телефон</option>
+            <option value="0">Застосунок-автентифікатор або ключ безпеки</option>
+          </select>
+        </div>
+        <div class="sim-row">
+          <div><strong>5. Позначки (теги) на фото інших користувачів:</strong></div>
+          <select id="sim-5" onchange="updateSimulator()">
+            <option value="15">З'являються у профілі автоматично</option>
+            <option value="0">Лише після мого ручного схвалення</option>
+          </select>
+        </div>
+        <div class="sim-row">
+          <div><strong>6. Сторонні ігри та тести («Який ти супергерой?»):</strong></div>
+          <select id="sim-6" onchange="updateSimulator()">
+            <option value="10">Надано доступ до списку друзів і пошти</option>
+            <option value="0">Усі сторонні інтеграції відключено</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <div style="display:flex; justify-content:space-between; font-weight:700;">
+          <span>Рівень вразливості цифрового сліду:</span>
+          <span id="sim-risk-label">100% (Критичний ризик)</span>
+        </div>
+        <div class="sim-meter-wrap">
+          <div class="sim-meter-fill" id="sim-meter" style="width:100%;"></div>
+        </div>
+        <div id="sim-advice" class="info-box amber">
+          Налаштуйте параметри вище та натисніть «Зафіксувати аудит безпеки».
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <button class="btn teal" onclick="submitSimulator()">Зафіксувати аудит безпеки</button>
+        <span class="stat-chip" id="sim-stats">Спроб: 0 | Статус: не завершено</span>
+      </div>
+    </section>
+
+    <!-- 7. КЕЙС-ТРЕНАЖЕР -->
+    <section class="card" id="sec-cases">
+      <h2>7. Кейс-тренажер цифрового громадянина (4 кейси)</h2>
+      <p>Проаналізуйте 4 базові цифрові ситуації та оберіть рішення, яке відповідає принципам цифрового громадянства.</p>
+      <div id="cases-container"></div>
+
+      <div class="stat-strip">
+        <button class="btn" onclick="checkCases()">Перевірити кейси</button>
+        <span class="stat-chip" id="cases-stats">Спроб: 0 | Результат: не перевірено</span>
+      </div>
+    </section>
+
+    <!-- 8. СИТУАЦІЙНІ ЗАДАЧІ (6 ЗАДАЧ) -->
+    <section class="card" id="sec-situations">
+      <h2>8. Практичні ситуаційні задачі з інформаційної безпеки та репутації (6 задач)</h2>
+      <p>
+        Розв'яжіть 6 поглиблених ситуаційних задач, які моделюють реальні виклики у мережі: витік метаданих EXIF, фішинг, доксинг, порушення авторського права, керування цифровою репутацією та цифрові права.
+      </p>
+      <div id="situations-container"></div>
+
+      <div class="stat-strip">
+        <button class="btn teal" onclick="checkSituations()">Перевірити ситуаційні задачі</button>
+        <span class="stat-chip" id="situations-stats">Спроб: 0 | Результат: не перевірено</span>
+      </div>
+    </section>
+
+    <!-- 9. ПІДСУМКОВИЙ ТЕСТ -->
+    <section class="card" id="sec-test">
+      <h2>9. Підсумкове тестування (10 запитань)</h2>
+      <p>Оберіть одну правильну відповідь у кожному запитанні. Після перевірки ви побачите детальне пояснення та підсумкову оцінку за 12-бальною шкалою.</p>
+      <div id="test-container"></div>
+
+      <div class="stat-strip">
+        <button class="btn" onclick="checkFinalTest()">Завершити тест і обчислити бал</button>
+        <span class="stat-chip" id="test-stats">Спроб: 0 | Оцінка: 0 / 12 балів</span>
+      </div>
+    </section>
+
+    <!-- 10. ЗВІТ PDF -->
+    <section class="card" id="sec-report">
+      <h2>10. Підсумки уроку та формування PDF-звіту успішності</h2>
+      <div class="info-box teal">
+        <h3>📊 Персональний електронний звіт учня</h3>
+        <p>
+          Після завершення вправ, ситуаційних задач та тестування натисніть кнопку нижче, щоб завантажити офіційний PDF-документ із зазначенням ПІБ учня, класу, витраченого часу, кількості використаних спроб у кожному модулі та підсумкової оцінки за 12-бальною шкалою.
+        </p>
+        <button class="btn" onclick="generatePDFReport()">📄 Завантажити звіт у PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ХОСТ ДЛЯ РЕНДЕРИНГУ PDF (поза екраном) -->
+  
+
+  <script>
+    // Глобальний стан учня
+    const state = {
+      name: '',
+      studentClass: '10-А',
+      startTime: Date.now(),
+      elapsedSeconds: 0,
+      dnd: { attempts: 0, score: 0, total: 8, done: false },
+      sim: { attempts: 0, risk: 100, done: false },
+      cases: { attempts: 0, score: 0, total: 4, done: false },
+      situations: { attempts: 0, score: 0, total: 6, done: false },
+      test: { attempts: 0, score: 0, total: 10, done: false }
+    };
+
+    // Таймер роботи учня
+    setInterval(() => {
+      state.elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+      const mins = String(Math.floor(state.elapsedSeconds / 60)).padStart(2, '0');
+      const secs = String(state.elapsedSeconds % 60).padStart(2, '0');
+      document.getElementById('live-timer').textContent = `${mins}:${secs}`;
+    }, 1000);
+
+    function updateProgress() {
+      const modules = [state.dnd.done, state.sim.done, state.cases.done, state.situations.done, state.test.done];
+      const completed = modules.filter(Boolean).length;
+      document.getElementById('progress-text').textContent = `${completed} / 5`;
+      document.getElementById('progress-fill').style.width = `${(completed / 5) * 100}%`;
+
+      if (state.dnd.done) document.getElementById('nav-dnd').classList.add('done');
+      if (state.sim.done) document.getElementById('nav-sim').classList.add('done');
+      if (state.cases.done) document.getElementById('nav-cases').classList.add('done');
+      if (state.situations.done) document.getElementById('nav-situations').classList.add('done');
+      if (state.test.done) document.getElementById('nav-test').classList.add('done');
+    }
+
+    function registerStudent() {
+      const nameVal = document.getElementById('studentName').value.trim();
+      const classVal = document.getElementById('studentClass').value;
+      if (!nameVal) {
+        alert('Будь ласка, введіть ваше прізвище та ім’я!');
+        return;
+      }
+      state.name = nameVal;
+      state.studentClass = classVal;
+      document.getElementById('sidebar-student-name').innerHTML = `<strong>Учень:</strong> ${nameVal} (${classVal})`;
+      document.getElementById('reg-status').textContent = `✅ Зареєстровано: ${nameVal}, клас ${classVal}. Таймер активний!`;
+      document.getElementById('nav-reg').classList.add('done');
+    }
+
+    // ================= 5. DRAG AND DROP =================
+    const dndData = [
+      { id: 'd1', text: 'Публікація відео у TikTok або Instagram', type: 'active' },
+      { id: 'd2', text: 'Файли cookies рекламних мереж у браузері', type: 'passive' },
+      { id: 'd3', text: 'Коментар під відео на YouTube', type: 'active' },
+      { id: 'd4', text: 'IP-адреса, зафіксована сервером сайту', type: 'passive' },
+      { id: 'd5', text: 'Відгук про товар в інтернет-магазині', type: 'active' },
+      { id: 'd6', text: 'GPS-координати фонового трекінгу смартфона', type: 'passive' },
+      { id: 'd7', text: 'Заповнення онлайн-анкети для реєстрації на олімпіаду', type: 'active' },
+      { id: 'd8', text: 'Цифровий відбиток параметрів браузера (Fingerprinting)', type: 'passive' }
+    ];
+    let selectedDndId = null;
+
+    function initDnD() {
+      const pool = document.getElementById('dnd-pool');
+      pool.innerHTML = '';
+      document.getElementById('zone-active').innerHTML = '<h4>🟢 Активний цифровий слід (свідомі дії)</h4>';
+      document.getElementById('zone-passive').innerHTML = '<h4>🔵 Пасивний цифровий слід (автоматичний збір)</h4>';
+
+      const shuffled = [...dndData].sort(() => Math.random() - 0.5);
+      shuffled.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'dnd-item';
+        el.id = item.id;
+        el.textContent = item.text;
+        el.draggable = true;
+        el.dataset.type = item.type;
+        el.ondragstart = (e) => e.dataTransfer.setData('text/plain', item.id);
+        el.onclick = (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('.dnd-item').forEach(x => x.classList.remove('selected'));
+          selectedDndId = item.id;
+          el.classList.add('selected');
+        };
+        pool.appendChild(el);
+      });
+    }
+
+    function allowDrop(e) { e.preventDefault(); }
+    function dropItem(e, target) {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      moveDndCard(id, target);
+    }
+    function zoneClick(target) {
+      if (selectedDndId) {
+        moveDndCard(selectedDndId, target);
+        selectedDndId = null;
+        document.querySelectorAll('.dnd-item').forEach(x => x.classList.remove('selected'));
+      }
+    }
+    function moveDndCard(id, target) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.classList.remove('correct', 'wrong');
+      if (target === 'pool') document.getElementById('dnd-pool').appendChild(card);
+      if (target === 'active') document.getElementById('zone-active').appendChild(card);
+      if (target === 'passive') document.getElementById('zone-passive').appendChild(card);
+    }
+
+    function checkDnD() {
+      state.dnd.attempts++;
+      let score = 0;
+      dndData.forEach(item => {
+        const el = document.getElementById(item.id);
+        const parentId = el.parentElement.id;
+        el.classList.remove('correct', 'wrong');
+        if ((item.type === 'active' && parentId === 'zone-active') ||
+            (item.type === 'passive' && parentId === 'zone-passive')) {
+          score++;
+          el.classList.add('correct');
+        } else {
+          el.classList.add('wrong');
+        }
+      });
+      state.dnd.score = score;
+      state.dnd.done = true;
+      document.getElementById('dnd-stats').textContent = `Спроб: ${state.dnd.attempts} | Результат: ${score} з ${dndData.length}`;
+      updateProgress();
+    }
+
+    function resetDnD() { initDnD(); }
+
+    // ================= 6. СИМУЛЯТОР ПРИВАТНОСТІ =================
+    function updateSimulator() {
+      let risk = 0;
+      for (let i = 1; i <= 6; i++) {
+        risk += parseInt(document.getElementById(`sim-${i}`).value, 10);
+      }
+      state.sim.risk = risk;
+      const meter = document.getElementById('sim-meter');
+      const label = document.getElementById('sim-risk-label');
+      const advice = document.getElementById('sim-advice');
+
+      meter.style.width = `${risk}%`;
+      if (risk >= 60) {
+        meter.style.background = '#dc2626';
+        label.textContent = `${risk}% (Високий ризик витоку даних)`;
+        advice.className = 'info-box red';
+        advice.textContent = '⚠️ Профіль надто відкритий: зловмисники можуть зібрати геолокацію, контакти та отримати доступ через сторонні додатки.';
+      } else if (risk >= 20) {
+        meter.style.background = '#d97706';
+        label.textContent = `${risk}% (Помірний ризик)`;
+        advice.className = 'info-box amber';
+        advice.textContent = '🔎 Непогано, але варто увімкнути автентифікатор 2FA та вимкнути пошук за номером телефону.';
+      } else {
+        meter.style.background = '#16a34a';
+        label.textContent = `${risk}% (Надійний захист)`;
+        advice.className = 'info-box teal';
+        advice.textContent = '🛡️ Відмінна конфігурація! Ваш активний і пасивний цифровий слід надійно контрольований.';
+      }
+    }
+
+    function submitSimulator() {
+      updateSimulator();
+      state.sim.attempts++;
+      state.sim.done = true;
+      const statusText = state.sim.risk < 20 ? `Безпечно (ризик ${state.sim.risk}%)` : `Потребує покращення (ризик ${state.sim.risk}%)`;
+      document.getElementById('sim-stats').textContent = `Спроб: ${state.sim.attempts} | Статус: ${statusText}`;
+      updateProgress();
+    }
+
+    // ================= 7. КЕЙС-ТРЕНАЖЕР (4 КЕЙСИ) =================
+    const casesData = [
+      {
+        q: 'Кейс 1. Однокласник виклав у загальний чат кумедне, але невдале фото друга без його дозволу та пропонує зробити з нього мем. Ваші дії як цифрового громадянина:',
+        options: [
+          'Переслати фото в інші канали, бо це просто жарт',
+          'Пояснити, що публікація фото без згоди порушує особисті межі та цифровий етикет, і попросити видалити зображення',
+          'Зберегти фото собі на випадок сварки'
+        ],
+        correct: 1,
+        exp: 'Повага до приватності інших та протидія кібербулінгу — базові принципи цифрового етикету.'
+      },
+      {
+        q: 'Кейс 2. Ви готуєте презентацію для шкільного проєкту і знайшли ідеальну ілюстрацію в Google Картинках. Як вчинити правомірно?',
+        options: [
+          'Завантажити будь-яку картинку і не вказувати автора, бо в інтернеті все безкоштовне',
+          'Обрати зображення з ліцензією Creative Commons (CC) або вільного використання та вказати джерело/автора',
+          'Видалити водяний знак автора у фоторедакторі'
+        ],
+        correct: 1,
+        exp: 'Цифрове право вимагає поваги до інтелектуальної власності та дотримання умов ліцензій.'
+      },
+      {
+        q: 'Кейс 3. У мережі поширюється гучна новина про «скасування ДПА/НМТ з завтрашнього дня» з посиланням на невідомий Telegram-канал. Що ви зробите?',
+        options: [
+          'Одразу зроблю репост у класний чат, щоб усі знали першими',
+          'Перевірю інформацію на офіційному сайті МОН України та УЦОЯО перед тим, як поширювати',
+          'Повірю, якщо під постом багато лайків'
+        ],
+        correct: 1,
+        exp: 'Критичне мислення та фактчекінг захищають вашу репутацію від поширення дезінформації.'
+      },
+      {
+        q: 'Кейс 4. Ви плануєте вступати на ІТ-спеціальність і хочете сформувати позитивну цифрову репутацію ще у 10 класі. Що найбільше допоможе?',
+        options: [
+          'Створення репозиторію на GitHub зі своїми навчальними проєктами та участь в олімпіадах/хакатонах',
+          'Повне видалення всіх акаунтів в інтернеті',
+          'Накрутка підписників у соцмережах'
+        ],
+        correct: 0,
+        exp: 'Позитивний цифровий портфель демонструє ваші реальні навички та відповідальність.'
+      }
+    ];
+
+    function renderCases() {
+      const box = document.getElementById('cases-container');
+      box.innerHTML = casesData.map((c, idx) => `
+        <div class="quiz-q" id="case-block-${idx}">
+          <div class="quiz-q-title">${c.q}</div>
+          ${c.options.map((opt, oIdx) => `
+            <label class="option-label" id="case-lbl-${idx}-${oIdx}">
+              <input type="radio" name="case-${idx}" value="${oIdx}" />
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+          <div class="feedback-note" id="case-fb-${idx}"></div>
+        </div>
+      `).join('');
+    }
+
+    function checkCases() {
+      state.cases.attempts++;
+      let score = 0;
+      casesData.forEach((c, idx) => {
+        const chosen = document.querySelector(`input[name="case-${idx}"]:checked`);
+        const fb = document.getElementById(`case-fb-${idx}`);
+        c.options.forEach((_, oIdx) => {
+          document.getElementById(`case-lbl-${idx}-${oIdx}`).classList.remove('correct-opt', 'wrong-opt');
+        });
+        fb.style.display = 'block';
+        if (chosen && parseInt(chosen.value, 10) === c.correct) {
+          score++;
+          document.getElementById(`case-lbl-${idx}-${c.correct}`).classList.add('correct-opt');
+          fb.style.background = '#dcfce7';
+          fb.style.color = '#14532d';
+          fb.textContent = `✅ Правильно! ${c.exp}`;
+        } else {
+          if (chosen) document.getElementById(`case-lbl-${idx}-${chosen.value}`).classList.add('wrong-opt');
+          document.getElementById(`case-lbl-${idx}-${c.correct}`).classList.add('correct-opt');
+          fb.style.background = '#fee2e2';
+          fb.style.color = '#7f1d1d';
+          fb.textContent = `❌ Помилка. ${c.exp}`;
+        }
+      });
+      state.cases.score = score;
+      state.cases.done = true;
+      document.getElementById('cases-stats').textContent = `Спроб: ${state.cases.attempts} | Результат: ${score} з ${casesData.length}`;
+      updateProgress();
+    }
+
+    // ================= 8. СИТУАЦІЙНІ ЗАДАЧІ (6 ЗАДАЧ) =================
+    const situationsData = [
+      {
+        q: 'Задача 1 (Витік EXIF-метаданих). Марія сфотографувала свій новий ноутбук у власній кімнаті та виклала оригінал фотофайлу на форум для продажу старого планшета. Через день незнайомець у коментарях назвав вулицю та номер будинку, де вона мешкає. Яка технічна причина цього витоку та як його уникнути?',
+        options: [
+          'Причина у вірусі на смартфоні; потрібно змінити SIM-карту',
+          'У файлі зображення збереглися EXIF-метадані з GPS-координатами; перед публікацією слід вимикати геотеги в камері або очищати метадані файлу',
+          'Форум автоматично визначає домашню адресу за кольором стін на фото'
+        ],
+        correct: 1,
+        exp: 'Оригінальні файли фотографій зберігають EXIF-заголовки з точними GPS-координатами місця зйомки.'
+      },
+      {
+        q: 'Задача 2 (Фішинг та викрадення цифрової ідентичності). Артем отримав у месенджері повідомлення від нібито служби підтримки: «Ваш акаунт порушив правила і буде видалений через 2 години. Підтвердіть особу за посиланням». Посилання веде на сайт instagrarn-security-check.com. Який правильний алгоритм дій?',
+        options: [
+          'Швидко ввести логін, пароль і код із SMS, щоб врятувати сторінку',
+          'Не переходити за підозрілим посиланням (тайпосквотинг у домені), заблокувати відправника та перевірити статус безпеки безпосередньо в офіційному додатку',
+          'Переслати це посилання друзям, щоб перевірити, чи відкривається воно в них'
+        ],
+        correct: 1,
+        exp: 'Зловмисники використали підміну літер у домені (rn замість m) та штучний дефіцит часу — класичні ознаки фішингу.'
+      },
+      {
+        q: 'Задача 3 (Доксинг та надмірна відкритість). Денис веде публічний ігровий канал під нікнеймом «ShadowFox_UA», але використовує ту саму аватарку і дату народження, що й на основній сторінці з реальним прізвищем та номером школи. Як зловмисники можуть поєднати ці профілі?',
+        options: [
+          'За допомогою OSINT-пошуку за зображенням (зворотний пошук фото) та зіставлення відкритих метаданих профілів',
+          'Це неможливо, якщо в профілях різні нікнейми',
+          'Тільки шляхом злому серверів провайдера'
+        ],
+        correct: 0,
+        exp: 'Відкриті джерела (OSINT) дозволяють за кілька хвилин пов’язати анонімний акаунт із реальною особою через спільні фото чи контакти.'
+      },
+      {
+        q: 'Задача 4 (Репутаційний слід із минулого). Три роки тому, у 7 класі, Олена залишала грубі коментарі під відео однолітків зі свого основного акаунту. Зараз вона подає заявку на міжнародну молодіжну програму обміну. Як правильно вчинити зі старим цифровим слідом?',
+        options: [
+          'Нічого не робити, бо коментарі трирічної давнини автоматично зникають',
+          'Провести ревізію активності (его-серфінг), видалити старі токсичні коментарі, оновити налаштування приватності та наповнити профіль актуальними досягненнями',
+          'Створити ще 5 акаунтів, щоб скаржитися на власну стару сторінку'
+        ],
+        correct: 1,
+        exp: 'Свідоме очищення застарілого негативного сліду та наповнення профілю позитивним контентом — основа репутаційного менеджменту.'
+      },
+      {
+        q: 'Задача 5 (Авторське право та штучний інтелект). Команда десятикласників створила вебсайт для шкільного конкурсу. Для оформлення вони взяли музичний трек відомого виконавця без дозволу та чужий програмний код із закритого репозиторію. Який принцип цифрового громадянства порушено?',
+        options: [
+          'Цифрове здоров’я та добробут',
+          'Цифрове право (порушення авторських прав та умов ліцензування контенту й коду)',
+          'Цифровий доступ'
+        ],
+        correct: 1,
+        exp: 'Використання чужих творів і програмного коду без дотримання ліцензій порушує норми цифрового права.'
+      },
+      {
+        q: 'Задача 6 (Вразливість через сторонні авторизації). Софія регулярно входить на розважальні сайти та в онлайн-тести через кнопку «Увійти через Google», не читаючи перелік запитуваних дозволів. Згодом вона помітила спам-розсилку зі своєї пошти. Що потрібно зробити негайно?',
+        options: [
+          'Видалити браузер з комп’ютера і встановити новий',
+          'Зайти в налаштування безпеки акаунту Google → «Сторонні додатки та сервіси», відкликати доступ для підозрілих сайтів та змінити пароль із увімкненням 2FA',
+          'Вимкнути Wi-Fi на 24 години'
+        ],
+        correct: 1,
+        exp: 'OAuth-токени сторонніх додатків зберігають доступ до акаунту навіть після закриття сайту, доки ви їх не відкличете вручну.'
+      }
+    ];
+
+    function renderSituations() {
+      const box = document.getElementById('situations-container');
+      box.innerHTML = situationsData.map((s, idx) => `
+        <div class="quiz-q" id="sit-block-${idx}">
+          <div class="quiz-q-title">${s.q}</div>
+          ${s.options.map((opt, oIdx) => `
+            <label class="option-label" id="sit-lbl-${idx}-${oIdx}">
+              <input type="radio" name="sit-${idx}" value="${oIdx}" />
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+          <div class="feedback-note" id="sit-fb-${idx}"></div>
+        </div>
+      `).join('');
+    }
+
+    function checkSituations() {
+      state.situations.attempts++;
+      let score = 0;
+      situationsData.forEach((s, idx) => {
+        const chosen = document.querySelector(`input[name="sit-${idx}"]:checked`);
+        const fb = document.getElementById(`sit-fb-${idx}`);
+        s.options.forEach((_, oIdx) => {
+          document.getElementById(`sit-lbl-${idx}-${oIdx}`).classList.remove('correct-opt', 'wrong-opt');
+        });
+        fb.style.display = 'block';
+        if (chosen && parseInt(chosen.value, 10) === s.correct) {
+          score++;
+          document.getElementById(`sit-lbl-${idx}-${s.correct}`).classList.add('correct-opt');
+          fb.style.background = '#dcfce7';
+          fb.style.color = '#14532d';
+          fb.textContent = `✅ Правильно! ${s.exp}`;
+        } else {
+          if (chosen) document.getElementById(`sit-lbl-${idx}-${chosen.value}`).classList.add('wrong-opt');
+          document.getElementById(`sit-lbl-${idx}-${s.correct}`).classList.add('correct-opt');
+          fb.style.background = '#fee2e2';
+          fb.style.color = '#7f1d1d';
+          fb.textContent = `❌ Помилка. ${s.exp}`;
+        }
+      });
+      state.situations.score = score;
+      state.situations.done = true;
+      document.getElementById('situations-stats').textContent = `Спроб: ${state.situations.attempts} | Результат: ${score} з ${situationsData.length}`;
+      updateProgress();
+    }
+
+    // ================= 9. ПІДСУМКОВИЙ ТЕСТ =================
+    const testData = [
+      {
+        q: '1. Що належить до пасивного цифрового сліду користувача?',
+        options: ['Опублікований допис у блозі', 'Автоматично зібрані файли cookies та IP-адреса', 'Надісланий електронний лист'],
+        correct: 1,
+        exp: 'Пасивний слід збирається технічними системами автоматично під час роботи в мережі.'
+      },
+      {
+        q: '2. Яка інформація може зберігатися у метаданих EXIF цифрової фотографії?',
+        options: ['Пароль від облікового запису', 'GPS-координати місця зйомки, дата, час і модель камери', 'Історія всіх дзвінків користувача'],
+        correct: 1,
+        exp: 'Стандарт EXIF записує технічні параметри знімка та геолокацію, якщо вона увімкнена.'
+      },
+      {
+        q: '3. У чому полягає ефект Стрейзанд у цифровому середовищі?',
+        options: ['У миттєвому видаленні будь-яких даних за запитом', 'У тому, що спроба приховати або видалити інформацію спричиняє її ще масовіше поширення', 'У шифруванні трафіку через VPN'],
+        correct: 1,
+        exp: 'Спроби публічного видалення чи заборони часто привертають підвищену увагу інтернет-спільноти.'
+      },
+      {
+        q: '4. Скільки елементів цифрового громадянства виділяє класична модель Майка Ріббла?',
+        options: ['5 елементів', '9 елементів', '12 елементів'],
+        correct: 1,
+        exp: 'Модель Майка Ріббла включає 9 елементів, об’єднаних у 3 принципи REP.'
+      },
+      {
+        q: '5. Що означає принцип REP у концепції цифрового громадянства?',
+        options: ['Read, Edit, Publish', 'Respect, Educate, Protect (Поважай, Навчайся, Захищай)', 'Register, Enter, Play'],
+        correct: 1,
+        exp: 'REP — це Повага до інших, Навчання медіаграмотності та Захист себе й спільноти.'
+      },
+      {
+        q: '6. Що таке «его-серфінг» (egosurfing) у контексті кібергігієни?',
+        options: ['Пошук власного імені та контактів у пошукових системах для контролю своєї видимості', 'Створення фейкових акаунтів', 'Видалення операційної системи'],
+        correct: 0,
+        exp: 'Регулярний пошук даних про себе допомагає вчасно виявити витік персональної інформації.'
+      },
+      {
+        q: '7. Який спосіб двофакторної автентифікації (2FA) є найбільш захищеним від перехоплення?',
+        options: ['Підтвердження через незахищений SMS-код', 'Застосунок-автентифікатор (TOTP) або апаратний ключ безпеки', 'Використання дати народження як другого пароля'],
+        correct: 1,
+        exp: 'Застосунки-автентифікатори та фізичні ключі захищені від підміни SIM-картки (SIM-swapping).'
+      },
+      {
+        q: '8. Що передбачає «право на забуття» (Right to be Forgotten)?',
+        options: ['Можливість вимагати видалення застарілих або неправомірно оприлюднених персональних даних', 'Звільнення від відповідальності за кіберзлочини', 'Автоматичне очищення історії браузера щогодини'],
+        correct: 0,
+        exp: 'Право на видалення персональних даних закріплене у GDPR та українському законодавстві.'
+      },
+      {
+        q: '9. До якого елемента цифрового громадянства належить контроль екранного часу та профілактика цифрової втоми?',
+        options: ['Цифрова комерція', 'Цифрове здоров’я та добробут', 'Цифровий доступ'],
+        correct: 1,
+        exp: 'Цифрове здоров’я охоплює фізичний та психологічний баланс при використанні технологій.'
+      },
+      {
+        q: '10. Яка дія найкраще формує позитивну цифрову репутацію старшокласника?',
+        options: ['Публікація освітніх, творчих чи волонтерських проєктів та дотримання етикету', 'Повна відсутність будь-яких налаштувань приватності', 'Участь у конфліктних коментарях'],
+        correct: 0,
+        exp: 'Конструктивна активність створює позитивний портфель досягнень у мережі.'
+      }
+    ];
+
+    function renderTest() {
+      const box = document.getElementById('test-container');
+      box.innerHTML = testData.map((t, idx) => `
+        <div class="quiz-q">
+          <div class="quiz-q-title">${t.q}</div>
+          ${t.options.map((opt, oIdx) => `
+            <label class="option-label" id="test-lbl-${idx}-${oIdx}">
+              <input type="radio" name="test-${idx}" value="${oIdx}" />
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+          <div class="feedback-note" id="test-fb-${idx}"></div>
+        </div>
+      `).join('');
+    }
+
+    function checkFinalTest() {
+      state.test.attempts++;
+      let score = 0;
+      testData.forEach((t, idx) => {
+        const chosen = document.querySelector(`input[name="test-${idx}"]:checked`);
+        const fb = document.getElementById(`test-fb-${idx}`);
+        t.options.forEach((_, oIdx) => {
+          document.getElementById(`test-lbl-${idx}-${oIdx}`).classList.remove('correct-opt', 'wrong-opt');
+        });
+        fb.style.display = 'block';
+        if (chosen && parseInt(chosen.value, 10) === t.correct) {
+          score++;
+          document.getElementById(`test-lbl-${idx}-${t.correct}`).classList.add('correct-opt');
+          fb.style.background = '#dcfce7';
+          fb.style.color = '#14532d';
+          fb.textContent = `✅ Вірно! ${t.exp}`;
+        } else {
+          if (chosen) document.getElementById(`test-lbl-${idx}-${chosen.value}`).classList.add('wrong-opt');
+          document.getElementById(`test-lbl-${idx}-${t.correct}`).classList.add('correct-opt');
+          fb.style.background = '#fee2e2';
+          fb.style.color = '#7f1d1d';
+          fb.textContent = `❌ Невірно. ${t.exp}`;
+        }
+      });
+      state.test.score = score;
+      state.test.done = true;
+      const grade12 = calculateGrade12();
+      document.getElementById('test-stats').textContent = `Спроб: ${state.test.attempts} | Тест: ${score}/10 | Загальна оцінка: ${grade12} / 12 балів`;
+      updateProgress();
+    }
+
+    function calculateGrade12() {
+      // Зважений підрахунок за всі 5 модулів (макс 12 балів)
+      const dndPts = (state.dnd.score / 8) * 2.0;
+      const simPts = state.sim.done ? (state.sim.risk < 20 ? 2.0 : 0.8) : 0;
+      const casesPts = (state.cases.score / 4) * 2.0;
+      const sitPts = (state.situations.score / 6) * 2.5;
+      const testPts = (state.test.score / 10) * 3.5;
+      return Math.round(dndPts + simPts + casesPts + sitPts + testPts);
+    }
+
+    // ================= 10. ГЕНЕРАЦІЯ PDF-ЗВІТУ (ЧЕРЕЗ CANVAS + JSPDF, БЕЗ ПОРОЖНІХ АРКУШІВ) =================
+    function renderReportToCanvas() {
+      const mins = Math.floor(state.elapsedSeconds / 60);
+      const secs = state.elapsedSeconds % 60;
+      const totalAttempts = state.dnd.attempts + state.sim.attempts + state.cases.attempts + state.situations.attempts + state.test.attempts;
+      const grade12 = calculateGrade12();
+
+      let levelText = 'Початковий (1–3 бали)';
+      if (grade12 >= 10) levelText = 'Високий (10–12 балів)';
+      else if (grade12 >= 7) levelText = 'Достатній (7–9 балів)';
+      else if (grade12 >= 4) levelText = 'Середній (4–6 балів)';
+
+      const dateStr = new Date().toLocaleString('uk-UA');
+      const simStatus = state.sim.done ? `Ризик ${state.sim.risk}%` : 'Не виконано';
+
+      const canvas = document.createElement('canvas');
+      const scale = 2; // Висока чіткість для друку A4
+      const W = 794;
+      const H = 1123;
+      canvas.width = W * scale;
+      canvas.height = H * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+
+      // Білий фон аркуша A4
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      const margin = 48;
+      const contentW = W - margin * 2;
+      let y = 52;
+
+      // Шапка документа
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(margin, y, contentW, 78);
+      ctx.fillStyle = '#dbeafe';
+      ctx.font = 'bold 12px Arial, sans-serif';
+      ctx.fillText('ІНФОРМАТИКА • 10 КЛАС • ЦИФРОВЕ ГРОМАДЯНСТВО', margin + 18, y + 26);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.fillText('ЗВІТ ПРО ВИКОНАННЯ ІНТЕРАКТИВНОГО УРОКУ', margin + 18, y + 54);
+
+      y += 96;
+      ctx.fillStyle = '#475569';
+      ctx.font = '13px Arial, sans-serif';
+      ctx.fillText(`Дата та час формування звіту: ${dateStr}`, margin, y);
+      y += 22;
+
+      // Таблиця даних учня
+      const infoRows = [
+        ['Учень / учениця:', state.name],
+        ['Клас:', state.studentClass],
+        ['Витрачений час роботи на уроці:', `${mins} хв ${secs} сек`],
+        ['Загальна кількість використаних спроб:', String(totalAttempts)]
+      ];
+
+      infoRows.forEach(([label, val]) => {
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(margin, y, 300, 34);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(margin, y, 300, 34);
+        ctx.strokeRect(margin + 300, y, contentW - 300, 34);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 13px Arial, sans-serif';
+        ctx.fillText(label, margin + 12, y + 22);
+        ctx.font = '14px Arial, sans-serif';
+        ctx.fillText(val, margin + 312, y + 22);
+        y += 34;
+      });
+
+      y += 30;
+      ctx.fillStyle = '#1e40af';
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.fillText('Деталізація результатів за навчальними модулями', margin, y);
+      y += 14;
+
+      // Заголовок таблиці модулів
+      const col1 = 440;
+      const col2 = 110;
+      const col3 = contentW - col1 - col2;
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(margin, y, contentW, 36);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 13px Arial, sans-serif';
+      ctx.fillText('Навчальний модуль', margin + 12, y + 23);
+      ctx.fillText('Спроби', margin + col1 + 26, y + 23);
+      ctx.fillText('Результат', margin + col1 + col2 + 28, y + 23);
+      y += 36;
+
+      const moduleRows = [
+        ['1. Вправа Drag & Drop «Класифікатор цифрового сліду»', String(state.dnd.attempts), `${state.dnd.score} / 8`],
+        ['2. Симулятор налаштувань приватності профілю', String(state.sim.attempts), simStatus],
+        ['3. Кейс-тренажер цифрового громадянина (4 кейси)', String(state.cases.attempts), `${state.cases.score} / 4`],
+        ['4. Ситуаційні задачі з інформаційної безпеки (6 задач)', String(state.situations.attempts), `${state.situations.score} / 6`],
+        ['5. Підсумкове тестування з теми (10 запитань)', String(state.test.attempts), `${state.test.score} / 10`]
+      ];
+
+      moduleRows.forEach((row, i) => {
+        const rowH = 38;
+        ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+        ctx.fillRect(margin, y, contentW, rowH);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeRect(margin, y, col1, rowH);
+        ctx.strokeRect(margin + col1, y, col2, rowH);
+        ctx.strokeRect(margin + col1 + col2, y, col3, rowH);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '13px Arial, sans-serif';
+        ctx.fillText(row[0], margin + 12, y + 24);
+        ctx.font = 'bold 13px Arial, sans-serif';
+        ctx.fillText(row[1], margin + col1 + 48, y + 24);
+        ctx.fillText(row[2], margin + col1 + col2 + 32, y + 24);
+        y += rowH;
+      });
+
+      y += 30;
+      // Підсумковий блок балів
+      ctx.fillStyle = '#eff6ff';
+      ctx.fillRect(margin, y, contentW, 84);
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(margin, y, contentW, 84);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.fillText('Підсумковий бал (за 12-бальною шкалою):', margin + 18, y + 34);
+      ctx.fillStyle = '#1e40af';
+      ctx.font = 'bold 22px Arial, sans-serif';
+      ctx.fillText(`${grade12} / 12 балів`, margin + 390, y + 35);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '14px Arial, sans-serif';
+      ctx.fillText(`Рівень навчальних досягнень: ${levelText}`, margin + 18, y + 64);
+
+      y += 135;
+      // Підписи
+      ctx.fillStyle = '#334155';
+      ctx.font = '14px Arial, sans-serif';
+      ctx.fillText('Підпис учня: ________________________', margin, y);
+      ctx.fillText('Перевірив учитель: ________________________', margin + 365, y);
+
+      // Нижній колонтитул
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Arial, sans-serif';
+      ctx.fillText('Сформовано автоматично в інтерактивному модулі з інформатики (10 клас)', margin, H - 36);
+
+      return canvas;
+    }
+
+    function generatePDFReport() {
+      if (!state.name) {
+        const inputName = document.getElementById('studentName').value.trim();
+        if (inputName) {
+          registerStudent();
+        } else {
+          alert('Спочатку введіть прізвище та ім’я учня у блоці «0. Реєстрація учня»!');
+          document.getElementById('sec-reg').scrollIntoView();
+          return;
+        }
+      }
+
+      const canvas = renderReportToCanvas();
+      const imgData = canvas.toDataURL('image/png');
+      const safeFileName = `Zvit_10klas_${state.name.replace(/\s+/g, '_')}.pdf`;
+
+      if (window.jspdf && window.jspdf.jsPDF) {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(safeFileName);
+      } else {
+        // Резервне відкриття зображення звіту для друку/збереження
+        const win = window.open('', '_blank', 'width=820,height=950');
+        if (!win) {
+          alert('Дозвольте спливаючі вікна у браузері для збереження звіту.');
+          return;
+        }
+        win.document.write(`<!DOCTYPE html><html><head><title>${safeFileName}</title></head><body style="margin:0;text-align:center;"><img src="${imgData}" style="max-width:100%;height:auto;" onload="window.print()"/></body></html>`);
+        win.document.close();
+      }
+    }
+
+    // Ініціалізація модулів
+    initDnD();
+    updateSimulator();
+    renderCases();
+    renderSituations();
+    renderTest();
+  </script>
+</body>
+</html>
